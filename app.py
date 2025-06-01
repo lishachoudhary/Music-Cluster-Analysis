@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+from dotenv import load_dotenv
+
+#Load environment variables from .env file
+load_dotenv()
+
+client_id = os.getenv("SPOTIFY_CLIENT_ID")
+client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
 
 # Load your preprocessed CSV
 df = pd.read_csv("spotify_cluster_data.csv")
@@ -28,6 +37,46 @@ st.download_button(
     file_name=f"{selected_mood}.csv",
     mime='text/csv'
 )
+
+st.dataframe(mood_df[['track_name', 'track_artist', 'track_album_name', 'track_href']])
+
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+
+if st.button("🎧 Create Playlist in Your Spotify"):
+    try:
+        sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=client_id,
+    client_secret=client_secret,
+    redirect_uri=redirect_uri,
+    scope="playlist-modify-public"
+))
+
+
+        user_id = sp.me()['id']
+
+        #Create the playlist
+        playlist = sp.user_playlist_create(
+            user=user_id,
+            name="Feel-Good Hits (ML Generated)",
+            public=True,
+            description="Generated using my mood-based clustering project 🎶"
+        )
+
+        #Get track URIs from the DataFrame
+        track_uris = df[df['cluster_label'] == "Feel-Good Hits"]['uri'].dropna().tolist()
+
+        if not track_uris:
+            st.warning("No valid Spotify URIs found in this cluster.")
+        else:
+            # Add tracks (Spotify limits to 100 at a time)
+            sp.playlist_add_items(playlist_id=playlist['id'], items=track_uris[:100])
+            st.success("🎉 Playlist created successfully! Check your Spotify account.")
+
+    except Exception as e:
+        st.error(f"⚠️ Something went wrong: {e}")
+
+
 
 # Radar chart of mood features
 features = ['energy', 'valence', 'danceability', 'acousticness', 'instrumentalness', 'tempo']
