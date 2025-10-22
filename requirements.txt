@@ -6,3 +6,4 @@ python-dotenv
 matplotlib
 seaborn
 plotly
+streamlit-extras
