@@ -1,5 +1,6 @@
 # Music-Cluster-Analysis
 # 🎧 Mood-Based Music Analysis & Playlist Generator
+#Streamlit app link: https://music-cluster-analysis.streamlit.app/
 
 This project analyzes songs based on their musical features (like energy, valence, and acousticness), clusters them into mood categories, and creates curated playlists for each mood. It includes an interactive Streamlit web app for exploring the playlists and mood profiles.
 
